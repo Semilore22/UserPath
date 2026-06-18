@@ -1,7 +1,5 @@
 import { PrismaClient } from '../src/generated/prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-
-const dbUrl = (process.env.DATABASE_URL ?? 'file:./dev.db').replace(/^file:/, '');
+import { PrismaNeon } from '@prisma/adapter-neon';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined; prismaPromise: Promise<PrismaClient> | undefined };
 
@@ -16,8 +14,8 @@ export async function getDb(): Promise<PrismaClient> {
   }
 
   globalForPrisma.prismaPromise = (async () => {
-    const factory = new PrismaBetterSqlite3({ url: dbUrl });
-    const client = new PrismaClient({ adapter: factory });
+    const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
+    const client = new PrismaClient({ adapter });
     globalForPrisma.prisma = client;
     return client;
   })();
