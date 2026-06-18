@@ -1,0 +1,24 @@
+.root {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-label-small-font-family);
+  font-size: var(--font-label-small-font-size);
+  line-height: var(--font-label-small-line-height);
+  color: var(--color-on-surface-variant);
+}
+
+.warning {
+  color: var(--color-on-surface-variant);
+}
+
+.submittedError {
+  color: var(--color-error);
+}
+
+.error {
+  color: var(--color-error);
+}
+
+.hint {
+  margin-left: 8px;
+}

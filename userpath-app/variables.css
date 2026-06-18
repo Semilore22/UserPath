@@ -1,0 +1,316 @@
+/* ========================================== */
+/* DESIGN SYSTEM CSS VARIABLES                */
+/* Generated automatically from JSON tokens.  */
+/* ========================================== */
+
+:root {
+  /* ========================================== */
+  /* TYPOGRAPHY VARIABLES                       */
+  /* ========================================== */
+  /* --- Typography: display large --- */
+  --font-display-large-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display-large-font-size: 64px;
+  --font-display-large-font-stretch: normal;
+  --font-display-large-font-style: normal;
+  --font-display-large-font-weight: 400;
+  --font-display-large-letter-spacing: -3px;
+  --font-display-large-line-height: 76.8px;
+  --font-display-large-paragraph-indent: 0px;
+  --font-display-large-paragraph-spacing: 0px;
+  --font-display-large-text-transform: none;
+  --font-display-large-text-decoration: none;
+
+  /* --- Typography: display medium --- */
+  --font-display-medium-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display-medium-font-size: 52px;
+  --font-display-medium-font-stretch: normal;
+  --font-display-medium-font-style: normal;
+  --font-display-medium-font-weight: 400;
+  --font-display-medium-letter-spacing: -2px;
+  --font-display-medium-line-height: 62.4px;
+  --font-display-medium-paragraph-indent: 0px;
+  --font-display-medium-paragraph-spacing: 0px;
+  --font-display-medium-text-transform: none;
+  --font-display-medium-text-decoration: none;
+
+  /* --- Typography: display small --- */
+  --font-display-small-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display-small-font-size: 36px;
+  --font-display-small-font-stretch: normal;
+  --font-display-small-font-style: normal;
+  --font-display-small-font-weight: 400;
+  --font-display-small-letter-spacing: -1px;
+  --font-display-small-line-height: 54px;
+  --font-display-small-paragraph-indent: 0px;
+  --font-display-small-paragraph-spacing: 0px;
+  --font-display-small-text-transform: none;
+  --font-display-small-text-decoration: none;
+
+  /* --- Typography: headline large --- */
+  --font-headline-large-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-headline-large-font-size: 36px;
+  --font-headline-large-font-stretch: normal;
+  --font-headline-large-font-style: normal;
+  --font-headline-large-font-weight: 400;
+  --font-headline-large-letter-spacing: -1px;
+  --font-headline-large-line-height: 54px;
+  --font-headline-large-paragraph-indent: 0px;
+  --font-headline-large-paragraph-spacing: 0px;
+  --font-headline-large-text-transform: none;
+  --font-headline-large-text-decoration: none;
+
+  /* --- Typography: headline medium --- */
+  --font-headline-medium-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-headline-medium-font-size: 28px;
+  --font-headline-medium-font-stretch: normal;
+  --font-headline-medium-font-style: normal;
+  --font-headline-medium-font-weight: 400;
+  --font-headline-medium-letter-spacing: -0.5px;
+  --font-headline-medium-line-height: 42px;
+  --font-headline-medium-paragraph-indent: 0px;
+  --font-headline-medium-paragraph-spacing: 0px;
+  --font-headline-medium-text-transform: none;
+  --font-headline-medium-text-decoration: none;
+
+  /* --- Typography: headline small --- */
+  --font-headline-small-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-headline-small-font-size: 24px;
+  --font-headline-small-font-stretch: normal;
+  --font-headline-small-font-style: normal;
+  --font-headline-small-font-weight: 400;
+  --font-headline-small-letter-spacing: -0.3px;
+  --font-headline-small-line-height: 36px;
+  --font-headline-small-paragraph-indent: 0px;
+  --font-headline-small-paragraph-spacing: 0px;
+  --font-headline-small-text-transform: none;
+  --font-headline-small-text-decoration: none;
+
+  /* --- Typography: title large --- */
+  --font-title-large-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-title-large-font-size: 24px;
+  --font-title-large-font-stretch: normal;
+  --font-title-large-font-style: normal;
+  --font-title-large-font-weight: 400;
+  --font-title-large-letter-spacing: -0.3px;
+  --font-title-large-line-height: 36px;
+  --font-title-large-paragraph-indent: 0px;
+  --font-title-large-paragraph-spacing: 0px;
+  --font-title-large-text-transform: none;
+  --font-title-large-text-decoration: none;
+
+  /* --- Typography: title medium --- */
+  --font-title-medium-font-family: var(--font-poppins), Poppins, sans-serif;
+  --font-title-medium-font-size: 18px;
+  --font-title-medium-font-stretch: normal;
+  --font-title-medium-font-style: normal;
+  --font-title-medium-font-weight: 400;
+  --font-title-medium-letter-spacing: -0.3px;
+  --font-title-medium-line-height: 27px;
+  --font-title-medium-paragraph-indent: 0px;
+  --font-title-medium-paragraph-spacing: 0px;
+  --font-title-medium-text-transform: none;
+  --font-title-medium-text-decoration: none;
+
+  /* --- Typography: title small --- */
+  --font-title-small-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-title-small-font-size: 16px;
+  --font-title-small-font-stretch: normal;
+  --font-title-small-font-style: normal;
+  --font-title-small-font-weight: 400;
+  --font-title-small-letter-spacing: -0.1px;
+  --font-title-small-line-height: 21px;
+  --font-title-small-paragraph-indent: 0px;
+  --font-title-small-paragraph-spacing: 0px;
+  --font-title-small-text-transform: none;
+  --font-title-small-text-decoration: none;
+
+  /* --- Typography: body large --- */
+  --font-body-large-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body-large-font-size: 18px;
+  --font-body-large-font-stretch: normal;
+  --font-body-large-font-style: normal;
+  --font-body-large-font-weight: 400;
+  --font-body-large-letter-spacing: -0.4px;
+  --font-body-large-line-height: 27px;
+  --font-body-large-paragraph-indent: 0px;
+  --font-body-large-paragraph-spacing: 0px;
+  --font-body-large-text-transform: none;
+  --font-body-large-text-decoration: none;
+
+  /* --- Typography: body medium --- */
+  --font-body-medium-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body-medium-font-size: 14px;
+  --font-body-medium-font-stretch: normal;
+  --font-body-medium-font-style: normal;
+  --font-body-medium-font-weight: 400;
+  --font-body-medium-letter-spacing: -0.2px;
+  --font-body-medium-line-height: 21px;
+  --font-body-medium-paragraph-indent: 0px;
+  --font-body-medium-paragraph-spacing: 0px;
+  --font-body-medium-text-transform: none;
+  --font-body-medium-text-decoration: none;
+
+  /* --- Typography: body small --- */
+  --font-body-small-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body-small-font-size: 12px;
+  --font-body-small-font-stretch: normal;
+  --font-body-small-font-style: normal;
+  --font-body-small-font-weight: 400;
+  --font-body-small-letter-spacing: -0.1px;
+  --font-body-small-line-height: 18px;
+  --font-body-small-paragraph-indent: 0px;
+  --font-body-small-paragraph-spacing: 0px;
+  --font-body-small-text-transform: none;
+  --font-body-small-text-decoration: none;
+
+  /* --- Typography: label large --- */
+  --font-label-large-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-label-large-font-size: 14px;
+  --font-label-large-font-stretch: normal;
+  --font-label-large-font-style: normal;
+  --font-label-large-font-weight: 400;
+  --font-label-large-letter-spacing: -0.5px;
+  --font-label-large-line-height: 21px;
+  --font-label-large-paragraph-indent: 0px;
+  --font-label-large-paragraph-spacing: 0px;
+  --font-label-large-text-transform: none;
+  --font-label-large-text-decoration: none;
+
+  /* --- Typography: label medium --- */
+  --font-label-medium-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-label-medium-font-size: 12px;
+  --font-label-medium-font-stretch: normal;
+  --font-label-medium-font-style: normal;
+  --font-label-medium-font-weight: 400;
+  --font-label-medium-letter-spacing: -0.3px;
+  --font-label-medium-line-height: 18px;
+  --font-label-medium-paragraph-indent: 0px;
+  --font-label-medium-paragraph-spacing: 0px;
+  --font-label-medium-text-transform: none;
+  --font-label-medium-text-decoration: none;
+
+  /* --- Typography: label small --- */
+  --font-label-small-font-family: var(--font-inter), 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-label-small-font-size: 11px;
+  --font-label-small-font-stretch: normal;
+  --font-label-small-font-style: normal;
+  --font-label-small-font-weight: 400;
+  --font-label-small-letter-spacing: -0.1px;
+  --font-label-small-line-height: 16.5px;
+  --font-label-small-paragraph-indent: 0px;
+  --font-label-small-paragraph-spacing: 0px;
+  --font-label-small-text-transform: none;
+  --font-label-small-text-decoration: none;
+
+  /* ========================================== */
+  /* COLOR ROLES - LIGHT THEME (DEFAULT)        */
+  /* ========================================== */
+  --color-primary: hsl(287, 95%, 53%);
+  --color-on-primary: hsl(0, 0%, 100%);
+  --color-primary-container: hsl(290, 100%, 84%);
+  --color-on-primary-container: hsl(288, 100%, 30%);
+  --color-secondary: hsl(286, 60%, 43%);
+  --color-on-secondary: hsl(0, 0%, 100%);
+  --color-secondary-container: hsl(290, 100%, 84%);
+  --color-on-secondary-container: hsl(288, 99%, 30%);
+  --color-tertiary: hsl(288, 31%, 42%);
+  --color-on-tertiary: hsl(0, 0%, 100%);
+  --color-tertiary-container: hsl(290, 90%, 84%);
+  --color-on-tertiary-container: hsl(288, 39%, 32%);
+  --color-error: hsl(354, 70%, 42%);
+  --color-on-error: hsl(0, 0%, 100%);
+  --color-error-container: hsl(354, 100%, 82%);
+  --color-on-error-container: hsl(354, 100%, 32%);
+  --color-background: hsl(322, 100%, 98%);
+  --color-on-background: hsl(288, 9%, 11%);
+  --color-surface: hsl(300, 100%, 99%);
+  --color-on-surface: hsl(288, 9%, 11%);
+  --color-surface-variant: hsl(307, 17%, 90%);
+  --color-on-surface-variant: hsl(283, 5%, 28%);
+  --color-outline: hsl(300, 8%, 50%);
+  --color-outline-variant: hsl(300, 8%, 80%);
+  --color-inverse-surface: hsl(288, 5%, 19%);
+  --color-inverse-on-surface: hsl(320, 36%, 95%);
+  --color-inverse-primary: hsl(290, 100%, 84%);
+  --color-surface-dim: hsl(315, 11%, 86%);
+  --color-surface-bright: hsl(322, 100%, 98%);
+  --color-surface-container-lowest: hsl(0, 0%, 100%);
+  --color-surface-container-low: hsl(320, 47%, 96%);
+  --color-surface-container: hsl(323, 27%, 94%);
+  --color-surface-container-high: hsl(315, 19%, 92%);
+  --color-surface-container-highest: hsl(315, 15%, 90%);
+
+  /* ========================================== */
+  /* SPACING TOKENS                             */
+  /* ========================================== */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 80px;
+
+  /* ========================================== */
+  /* BORDER RADIUS TOKENS                       */
+  /* ========================================== */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* ========================================== */
+  /* SHADOW / ELEVATION TOKENS                  */
+  /* ========================================== */
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 24px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+/* ========================================== */
+/* COLOR ROLES - DARK THEME (MANUAL OVERRIDE) */
+/* ========================================== */
+[data-theme="dark"],
+.dark-theme {
+  --color-primary: hsl(287, 85%, 65%);
+  --color-on-primary: hsl(288, 100%, 18%);
+  --color-primary-container: hsl(287, 100%, 30%);
+  --color-on-primary-container: hsl(290, 100%, 92%);
+  --color-secondary: hsl(286, 70%, 70%);
+  --color-on-secondary: hsl(288, 100%, 18%);
+  --color-secondary-container: hsl(286, 46%, 31%);
+  --color-on-secondary-container: hsl(290, 100%, 92%);
+  --color-tertiary: hsl(288, 50%, 68%);
+  --color-on-tertiary: hsl(288, 100%, 16%);
+  --color-tertiary-container: hsl(288, 50%, 26%);
+  --color-on-tertiary-container: hsl(288, 90%, 90%);
+  --color-error: hsl(354, 80%, 75%);
+  --color-on-error: hsl(354, 100%, 18%);
+  --color-error-container: hsl(354, 100%, 30%);
+  --color-on-error-container: hsl(354, 100%, 90%);
+  --color-background: hsl(288, 15%, 8%);
+  --color-on-background: hsl(313, 30%, 92%);
+  --color-surface: hsl(288, 15%, 8%);
+  --color-on-surface: hsl(313, 30%, 92%);
+  --color-surface-variant: hsl(300, 6%, 28%);
+  --color-on-surface-variant: hsl(305, 10%, 79%);
+  --color-outline: hsl(300, 4%, 57%);
+  --color-outline-variant: hsl(300, 6%, 28%);
+  --color-inverse-surface: hsl(313, 30%, 92%);
+  --color-inverse-on-surface: hsl(288, 15%, 8%);
+  --color-inverse-primary: hsl(287, 100%, 39%);
+  --color-surface-dim: hsl(288, 15%, 8%);
+  --color-surface-bright: hsl(288, 12%, 22%);
+  --color-surface-container-lowest: hsl(288, 15%, 5%);
+  --color-surface-container-low: hsl(288, 15%, 10%);
+  --color-surface-container: hsl(288, 15%, 14%);
+  --color-surface-container-high: hsl(288, 12%, 18%);
+  --color-surface-container-highest: hsl(288, 10%, 23%);
+}

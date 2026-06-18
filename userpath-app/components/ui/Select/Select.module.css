@@ -1,0 +1,84 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+  line-height: var(--font-body-medium-line-height);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.wrapper {
+  position: relative;
+}
+
+.wrapper::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--color-on-surface-variant);
+  pointer-events: none;
+}
+
+.select {
+  padding: 10px 48px 10px 12px;
+  border: 1px solid var(--color-outline);
+  border-radius: 1000px;
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+  line-height: var(--font-body-medium-line-height);
+  color: var(--color-on-surface);
+  background-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.select:-webkit-autofill,
+.select:-webkit-autofill:hover,
+.select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface-container) inset;
+  -webkit-text-fill-color: var(--color-on-surface);
+}
+
+.select.filled {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface-container);
+}
+
+.select:focus {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface-container);
+}
+
+.select:focus-visible {
+  outline: none;
+}
+
+.select[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.select option {
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.error {
+  font-family: var(--font-body-small-font-family);
+  font-size: var(--font-body-small-font-size);
+  line-height: var(--font-body-small-line-height);
+  color: var(--color-error);
+}

@@ -1,0 +1,1 @@
+export { JourneyTable } from './JourneyTable';

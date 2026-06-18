@@ -1,0 +1,62 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+  line-height: var(--font-body-medium-line-height);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.hint {
+  font-family: var(--font-body-small-font-family);
+  font-size: var(--font-body-small-font-size);
+  line-height: var(--font-body-small-line-height);
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option {
+  padding: 6px 14px;
+  border: 1px solid var(--color-outline);
+  border-radius: 1000px;
+  background-color: transparent;
+  color: var(--color-on-surface-variant);
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.option:hover {
+  border-color: var(--color-primary);
+}
+
+.selected {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+
+.error {
+  font-family: var(--font-body-small-font-family);
+  font-size: var(--font-body-small-font-size);
+  line-height: var(--font-body-small-line-height);
+  color: var(--color-error);
+}

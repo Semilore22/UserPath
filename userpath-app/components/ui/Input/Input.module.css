@@ -1,0 +1,58 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+  line-height: var(--font-body-medium-line-height);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.input {
+  padding: 10px 12px;
+  border: 1px solid var(--color-outline);
+  border-radius: 1000px;
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+  line-height: var(--font-body-medium-line-height);
+  color: var(--color-on-surface);
+  background-color: transparent;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface-container) inset;
+  -webkit-text-fill-color: var(--color-on-surface);
+}
+
+.input:not(:placeholder-shown) {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface-container);
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  background-color: var(--color-surface-container);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.error {
+  font-family: var(--font-body-small-font-family);
+  font-size: var(--font-body-small-font-size);
+  line-height: var(--font-body-small-line-height);
+  color: var(--color-error);
+}

@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum FlowType {
+  onboarding
+  checkout
+  sign_up_login
+  full_product_flow
+  custom
+}
+
+enum EditType {
+  rename_node
+  add_branch
+  remove_step
+  change_label
+  restore_state
+}
+
+model Session {
+  id         String      @id @default(cuid())
+  ipAddress  String
+  createdAt  DateTime    @default(now())
+  flows      Flow[]
+  rateLimits RateLimit[]
+}
+
+model Flow {
+  id               String    @id @default(cuid())
+  sessionId        String
+  productName      String
+  flowType         FlowType
+  targetUsers      String
+  keyAction        String
+  rawDescription   String
+  nodes            String
+  edges            String
+  userJourneySteps String
+  createdAt        DateTime  @default(now())
+  lastEditedAt     DateTime  @default(now()) @updatedAt
+  session          Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  editLogs         EditLog[]
+  cacheEntries     FlowGenerationCache[]
+
+  @@index([sessionId])
+  @@index([sessionId, createdAt])
+}
+
+model EditLog {
+  id            String   @id @default(cuid())
+  flowId        String
+  sessionId     String
+  editType      EditType
+  previousValue String   @default("")
+  newValue      String   @default("")
+  editedAt      DateTime @default(now())
+  flow          Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  @@index([flowId])
+}
+
+model FlowGenerationCache {
+  id        String   @id @default(cuid())
+  cacheKey  String   @unique
+  flowId    String
+  createdAt DateTime @default(now())
+  flow      Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+}
+
+model RateLimit {
+  ipAddress       String   @id
+  generationCount Int      @default(0)
+  windowStart     DateTime
+  windowExpires   DateTime
+  sessionId       String
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
