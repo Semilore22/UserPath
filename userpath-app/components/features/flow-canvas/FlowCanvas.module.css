@@ -35,7 +35,7 @@
 .nodeProcess {
   position: relative;
   padding: 10px 14px;
-  width: 180px;
+  width: 240px;
   min-height: 56px;
   text-align: left;
   white-space: normal;
@@ -86,7 +86,7 @@
 .nodeError {
   position: relative;
   padding: 10px 14px;
-  width: 180px;
+  width: 240px;
   min-height: 56px;
   text-align: left;
   white-space: normal;
@@ -180,6 +180,11 @@
   margin-left: auto;
 }
 
+.nodeActionsHidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .nodeActionBtn {
   display: inline-flex;
   align-items: center;
@@ -243,35 +248,6 @@
 
 .renameInput:focus {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
-}
-
-/* ── Edge add button (edit mode overlay) ──────────────────────────────────── */
-
-.edgeAddBtnGroup {
-  transition: opacity 0.15s;
-}
-
-.edgeAddBtnGroup:hover {
-  opacity: 0.8;
-}
-
-.edgeAddBg {
-  fill: var(--color-primary-container);
-  stroke: var(--color-primary);
-  stroke-width: 1.5;
-  transition: fill 0.15s;
-}
-
-.edgeAddBtnGroup:hover .edgeAddBg {
-  fill: var(--color-primary);
-}
-
-.edgeAddText {
-  fill: var(--color-on-primary);
-  font-size: 14px;
-  font-weight: 700;
-  pointer-events: none;
-  user-select: none;
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */

@@ -7,10 +7,10 @@ import { FlowCanvas } from '@/components/features/flow-canvas';
 import { JourneyTable } from '@/components/features/journey-table';
 import { ExportButton } from '@/components/features/export-button';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { useSession } from '@/components/hooks/useSession';
 import type { Node, Edge, JourneyStep } from '@/types';
 import type { ReactFlowInstance } from 'reactflow';
+import { SESSION_HEADER } from '@/lib/constants';
 import styles from './page.module.css';
 
 interface FlowData {
@@ -60,8 +60,6 @@ export default function FlowPage() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const noSession = !sessionId;
-
   // Load cached flow data immediately — no session needed
   useEffect(() => {
     try {
@@ -75,19 +73,24 @@ export default function FlowPage() {
     } catch {}
   }, [flowId]);
 
-  // Fetch fresh data from API once session is ready
+  // Fetch fresh data from API — sessionId optional, GET works without it
   useEffect(() => {
-    if (noSession) return;
-
     const abortController = new AbortController();
 
     const fetchFresh = async () => {
       try {
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        if (sessionId) {
+          headers[SESSION_HEADER] = sessionId;
+        }
+
         const res = await fetch(`/api/flow/${flowId}`, {
-          headers: getHeaders(),
+          headers,
           signal: abortController.signal,
         });
         const responseData = await res.json();
+
+        if (abortController.signal.aborted) return;
 
         if (responseData.notFound) {
           setNotFound(true);
@@ -111,15 +114,17 @@ export default function FlowPage() {
           localStorage.setItem('userpath-last-flow', flowId);
         } catch {}
       } catch {
-        setNetworkError(true);
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setNetworkError(true);
+          setLoading(false);
+        }
       }
     };
 
     fetchFresh();
 
     return () => { abortController.abort(); };
-  }, [flowId, noSession, getHeaders]);
+  }, [flowId, sessionId]);
 
   useEffect(() => {
     return () => {
@@ -320,78 +325,6 @@ export default function FlowPage() {
     await restoreSnapshot(snapshot);
   }, [undoStack, restoreSnapshot, saveSnapshot]);
 
-  const handleAddNode = useCallback(async (sourceId: string, targetId: string) => {
-    const currentFlow = flowRef.current;
-    if (!currentFlow || !sessionId) return;
-    if (editing) return;
-
-    const snapshot = saveSnapshot();
-    setUndoStack(stack => {
-      const newStack = [...stack, snapshot];
-      if (newStack.length > 50) newStack.shift();
-      return newStack;
-    });
-    setRedoStack([]);
-    setEditing(true);
-
-    const newNode: Node = {
-      nodeId: `node-${Date.now()}`,
-      type: 'process',
-      label: 'New Step',
-      isHappyPath: false,
-      edgeCaseType: null,
-    };
-
-    const oldEdge = currentFlow.edges.find(e => e.fromNode === sourceId && e.toNode === targetId);
-    const newEdges = currentFlow.edges.filter(e => !(e.fromNode === sourceId && e.toNode === targetId));
-    newEdges.push({
-      edgeId: `edge-${sourceId}-${newNode.nodeId}`,
-      fromNode: sourceId,
-      toNode: newNode.nodeId,
-      label: oldEdge?.label ?? '',
-    });
-    newEdges.push({
-      edgeId: `edge-${newNode.nodeId}-${targetId}`,
-      fromNode: newNode.nodeId,
-      toNode: targetId,
-      label: '',
-    });
-
-    const finalNodes = [...currentFlow.nodes, newNode];
-
-    try {
-      const res = await fetch(`/api/flow/${flowId}`, {
-        method: 'PATCH',
-        headers: getHeaders(),
-        body: JSON.stringify({
-          editType: 'add_branch',
-          sessionId,
-          nodes: finalNodes,
-          edges: newEdges,
-          previousValue: '',
-          newValue: 'New Step',
-        }),
-      });
-
-      if (res.ok) {
-        try {
-          const data = await res.json();
-          setFlow({
-            ...currentFlow,
-            nodes: JSON.parse(data.nodes),
-            edges: JSON.parse(data.edges),
-          });
-        } catch {
-          setUndoStack(stack => stack.slice(0, -1));
-        }
-      } else {
-        setUndoStack(stack => stack.slice(0, -1));
-      }
-    } finally {
-      setEditing(false);
-    }
-  }, [flowId, sessionId, getHeaders, saveSnapshot, editing]);
-
   useEffect(() => {
     if (!editMode) return;
     const handler = (e: KeyboardEvent) => {
@@ -407,20 +340,7 @@ export default function FlowPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [editMode, handleUndo, handleRedo]);
 
-  if (noSession && !flow) {
-    return (
-      <div className={styles.root}>
-        <main className={styles.main}>
-          <div className={styles.loading}>
-            <div className={styles.skeleton} />
-            <p className={styles.loadingText}>Loading flow...</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (loading) {
+  if (loading && !flow) {
     return (
       <div className={styles.root}>
         <main className={styles.main}>
@@ -550,9 +470,6 @@ export default function FlowPage() {
                   </button>
                 </div>
               )}
-              <Link href="/generate">
-                <Button variant="secondary">New Flow</Button>
-              </Link>
               <ExportButton
                 canvasRef={exportRef}
                 journeyRef={journeyRef}
@@ -570,7 +487,6 @@ export default function FlowPage() {
               editMode={editMode}
               onRename={handleNodeEdit}
               onDelete={handleDelete}
-              onAddNode={handleAddNode}
               reactFlowRef={reactFlowRef}
             />
           </div>

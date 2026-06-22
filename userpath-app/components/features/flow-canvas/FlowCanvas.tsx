@@ -41,11 +41,10 @@ interface NodeData {
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
 function EditActions({ data, onRename }: { data: NodeData; onRename?: () => void }) {
-  if (!data.editMode) return null;
   const isTerminal = data.type === 'terminal';
 
   return (
-    <div className={styles.nodeActions}>
+    <div className={`${styles.nodeActions} ${data.editMode ? '' : styles.nodeActionsHidden}`}>
       <button
         className={styles.nodeActionBtn}
         onClick={onRename}
@@ -313,7 +312,6 @@ interface FlowCanvasProps {
   editMode?: boolean;
   onRename?: (nodeId: string, newLabel: string) => void;
   onDelete?: (nodeId: string) => void;
-  onAddNode?: (sourceId: string, targetId: string) => void;
   reactFlowRef?: React.MutableRefObject<ReactFlowInstance | null>;
 }
 
@@ -326,7 +324,6 @@ export function FlowCanvas({
   editMode,
   onRename,
   onDelete,
-  onAddNode,
   reactFlowRef,
 }: FlowCanvasProps) {
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState([]);
@@ -334,7 +331,7 @@ export function FlowCanvas({
   const instanceRef = useRef<ReactFlowInstance | null>(null);
   const hasLayouted = useRef(false);
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
-  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  const initialFitDone = useRef(false);
   const isEditMode = editMode ?? false;
   const hasNodes = flowNodes.length > 0;
 
@@ -378,48 +375,17 @@ export function FlowCanvas({
       setRfEdges(baseEdges);
     }
 
-    const t = setTimeout(() => {
-      instanceRef.current?.fitView({ padding: 0.15, minZoom: 0.05, maxZoom: 1.2 });
-    }, 60);
-    return () => {
-      clearTimeout(t);
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
-    };
+    if (!initialFitDone.current) {
+      initialFitDone.current = true;
+      const t = setTimeout(() => {
+        instanceRef.current?.fitView({ padding: 0.15, minZoom: 0.05, maxZoom: 1.2 });
+      }, 60);
+      return () => clearTimeout(t);
+    }
   }, [baseNodes, baseEdges, setRfNodes, setRfEdges]);
 
   useEffect(() => { hasLayouted.current = false; }, [flowId, baseNodes]);
-
-  const handleAddNodeFromEdge = useCallback((source: string, target: string) => {
-    onAddNode?.(source, target);
-  }, [onAddNode]);
-
-  // Edge + buttons (edit mode overlay)
-  const edgeAddButtons = useMemo(() => {
-    if (!isEditMode || rfNodes.length === 0) return [];
-    return rfEdges
-      .filter(edge => !hoveredEdgeId || edge.id === hoveredEdgeId)
-      .map(edge => {
-        const src = rfNodes.find(n => n.id === edge.source);
-        const tgt = rfNodes.find(n => n.id === edge.target);
-        if (!src || !tgt) return null;
-
-        const sw = getNodeDimensions(src.type ?? 'process').width;
-        const sh = getNodeDimensions(src.type ?? 'process').height;
-        const th = getNodeDimensions(tgt.type ?? 'process').height;
-
-        const fx = (src.position.x + sw + tgt.position.x) / 2;
-        const fy = (src.position.y + sh / 2 + tgt.position.y + th / 2) / 2;
-
-        return {
-          id: `add-${edge.id}`,
-          screenX: fx * viewport.zoom + viewport.x,
-          screenY: fy * viewport.zoom + viewport.y,
-          source: edge.source,
-          target: edge.target,
-        };
-      })
-      .filter(Boolean) as { id: string; screenX: number; screenY: number; source: string; target: string }[];
-  }, [isEditMode, rfNodes, rfEdges, hoveredEdgeId, viewport]);
+  useEffect(() => { initialFitDone.current = false; }, [flowId]);
 
   if (!hasNodes) {
     return (
@@ -441,8 +407,6 @@ export function FlowCanvas({
         onEdgesChange={onEdgesChange}
         onInit={onInit}
         onMove={onMove}
-        onEdgeMouseEnter={(_e, edge) => setHoveredEdgeId(edge.id)}
-        onEdgeMouseLeave={() => setHoveredEdgeId(null)}
         nodeTypes={nodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         style={{ width: '100%', height: '100%' }}
@@ -456,23 +420,6 @@ export function FlowCanvas({
       >
         <Background />
         <Controls />
-
-        {/* Edit-mode: add-node buttons on edges */}
-        {isEditMode && (
-          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}>
-            {edgeAddButtons.map(btn => (
-              <g
-                key={btn.id}
-                className={styles.edgeAddBtnGroup}
-                onClick={() => handleAddNodeFromEdge(btn.source, btn.target)}
-                style={{ cursor: 'pointer', pointerEvents: 'all' }}
-              >
-                <circle cx={btn.screenX} cy={btn.screenY} r={10} className={styles.edgeAddBg} />
-                <text x={btn.screenX} y={btn.screenY + 4} textAnchor="middle" className={styles.edgeAddText}>+</text>
-              </g>
-            ))}
-          </svg>
-        )}
       </ReactFlow>
     </div>
   );

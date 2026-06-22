@@ -1,6 +1,6 @@
 import type { Node as FlowNode, Edge as FlowEdge } from '@/types';
 
-export const NODE_WIDTH = 180;
+export const NODE_WIDTH = 240;
 export const NODE_HEIGHT = 56;
 export const DIAMOND_WIDTH = 160;
 export const DIAMOND_HEIGHT = 160;

@@ -6,7 +6,7 @@ const STEPS = [
     label: 'Step 01',
     headline: 'Describe your product and tell us who it\u2019s for.',
     subtext:
-      'Write what your product does in plain language, then answer four quick fields \u2014 product name, flow type, target user, and key action. No templates, no blank canvas. This is what separates a generic diagram from one that actually matches your product.',
+      'Write what your product does in plain language, then answer four quick fields , product name, flow type, target user, and key action. No templates, no blank canvas. This is what separates a generic diagram from one that actually matches your product.',
     mockup: <Step1Mockup />,
     alt: false,
   },
@@ -14,7 +14,7 @@ const STEPS = [
     label: 'Step 02',
     headline: 'Get a complete flow diagram and user journey.',
     subtext:
-      'UserPath generates a visual flow diagram with standard UX notation, a step-by-step user journey table with edge cases, and a flow summary \u2014 all at once. The happy path is highlighted so you can trace it instantly.',
+      'UserPath generates a visual flow diagram with standard UX notation, a step-by-step user journey table with edge cases, and a flow summary , all at once. The happy path is highlighted so you can trace it instantly.',
     mockup: <Step2Mockup />,
     alt: true,
   },
@@ -22,7 +22,7 @@ const STEPS = [
     label: 'Step 03',
     headline: 'Download your flow or journey as PNG.',
     subtext:
-      'Export your finished flow diagram or step-by-step user journey as a high-resolution PNG in one click. Edit any node or branch if something needs adjusting \u2014 UserPath updates the diagram and refreshes your export automatically.',
+      'Export your finished flow diagram or step-by-step user journey as a high-resolution PNG in one click. Edit any node or branch if something needs adjusting , UserPath updates the diagram and refreshes your export automatically.',
     mockup: <Step3Mockup />,
     alt: false,
   },

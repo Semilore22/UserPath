@@ -109,7 +109,7 @@ export function ExportButton({
       const dataUrl = await toPng(canvasRef.current, {
         backgroundColor: bgColor,
         quality: 1,
-        pixelRatio: 2,
+        pixelRatio: 4,
       });
 
       const link = document.createElement('a');
@@ -146,7 +146,7 @@ export function ExportButton({
       const dataUrl = await toPng(journeyRef.current, {
         backgroundColor: bgColor,
         quality: 1,
-        pixelRatio: 2,
+        pixelRatio: 4,
       });
 
       const link = document.createElement('a');

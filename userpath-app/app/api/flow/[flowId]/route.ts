@@ -20,16 +20,6 @@ function isValidEdge(e: unknown): e is Record<string, unknown> {
   return true;
 }
 
-const VALID_NODE_TYPES = ['process', 'decision', 'error', 'terminal'] as const;
-type ValidNodeType = typeof VALID_NODE_TYPES[number];
-
-function isValidNodeValue(n: unknown): n is Record<string, unknown> {
-  if (!isValidNode(n)) return false;
-  const type = (n as Record<string, unknown>).type as string;
-  if (!VALID_NODE_TYPES.includes(type as ValidNodeType)) return false;
-  return true;
-}
-
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ flowId: string }> },
@@ -99,15 +89,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'ERR_FORBIDDEN' }, { status: 403 });
     }
 
-    const { editType, nodeId, previousValue, newValue, branchData } = body as {
+    const { editType, nodeId, previousValue, newValue } = body as {
       editType?: string;
       nodeId?: string;
       previousValue?: string;
       newValue?: string;
-      branchData?: {
-        newNode: Record<string, unknown>;
-        newEdge: Record<string, unknown>;
-      };
     };
 
     if (!editType || !EDIT_TYPES.includes(editType as EditType)) {
@@ -175,15 +161,24 @@ export async function PATCH(
         edges.length = 0;
         edges.push(...remainingEdges);
       } else if (editType === 'add_branch') {
-        if (!branchData || !branchData.newNode || !branchData.newEdge) {
+        const addData = body as {
+          nodes?: Array<Record<string, unknown>>;
+          edges?: Array<Record<string, unknown>>;
+        };
+        if (
+          !Array.isArray(addData.nodes) ||
+          !Array.isArray(addData.edges) ||
+          !addData.nodes.every(isValidNode) ||
+          !addData.edges.every(isValidEdge)
+        ) {
           return { error: 'ERR_MISSING_RESTORE_DATA', status: 400 as const };
         }
-        if (!isValidNodeValue(branchData.newNode) || !isValidEdge(branchData.newEdge)) {
-          return { error: 'ERR_MISSING_RESTORE_DATA', status: 400 as const };
-        }
-        nodes.push(branchData.newNode);
-        edges.push(branchData.newEdge);
-        logNew = String(branchData.newNode.label ?? 'New Step');
+        logPrevious = `nodes:${nodes.length},edges:${edges.length}`;
+        nodes.length = 0;
+        edges.length = 0;
+        nodes.push(...addData.nodes);
+        edges.push(...addData.edges);
+        logNew = `nodes:${nodes.length},edges:${edges.length}`;
       } else if (editType === 'restore_state') {
         const restoreData = body as {
           nodes?: Array<Record<string, unknown>>;
