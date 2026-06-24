@@ -3,13 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FlowCanvas } from '@/components/features/flow-canvas';
+import { FlowCanvas, buildReactFlowNodes, buildReactFlowEdges, FlowErrorBoundary } from '@/components/features/flow-canvas';
 import { JourneyTable } from '@/components/features/journey-table';
 import { ExportButton } from '@/components/features/export-button';
 import { Card } from '@/components/ui/Card';
 import { useSession } from '@/components/hooks/useSession';
 import type { Node, Edge, JourneyStep } from '@/types';
-import type { ReactFlowInstance } from 'reactflow';
+import type { ReactFlowInstance, Node as RFNode, Edge as RFEdge } from 'reactflow';
+import type { NodeData } from '@/components/features/flow-canvas';
 import { SESSION_HEADER } from '@/lib/constants';
 import styles from './page.module.css';
 
@@ -59,6 +60,23 @@ export default function FlowPage() {
   const [showTooltip, setShowTooltip] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const editingRef = useRef(false);
+
+  const [rfNodes, setRfNodes] = useState<RFNode<NodeData>[]>([]);
+  const [rfEdges, setRfEdges] = useState<RFEdge[]>([]);
+  const [renderError, setRenderError] = useState(false);
+  const rfDataRef = useRef<{ nodes: RFNode<NodeData>[]; edges: RFEdge[] }>({ nodes: [], edges: [] });
+
+  const handleRetryRender = () => {
+    setRenderError(false);
+    setRfNodes([]);
+    setRfEdges([]);
+    setTimeout(() => {
+      const { nodes, edges } = rfDataRef.current;
+      setRfNodes(nodes);
+      setRfEdges(edges);
+    }, 100);
+  };
 
   // Load cached flow data immediately — no session needed
   useEffect(() => {
@@ -78,11 +96,12 @@ export default function FlowPage() {
     const abortController = new AbortController();
 
     const fetchFresh = async () => {
+      if (!sessionId) return;
       try {
-        const headers: HeadersInit = { 'Content-Type': 'application/json' };
-        if (sessionId) {
-          headers[SESSION_HEADER] = sessionId;
-        }
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+          [SESSION_HEADER]: sessionId,
+        };
 
         const res = await fetch(`/api/flow/${flowId}`, {
           headers,
@@ -137,7 +156,7 @@ export default function FlowPage() {
     async (nodeId: string, newLabel: string) => {
       const currentFlow = flowRef.current;
       if (!currentFlow || !sessionId) return;
-      if (editing) return;
+      if (editingRef.current) return;
 
       const node = currentFlow.nodes.find((n) => n.nodeId === nodeId);
       if (!node) return;
@@ -149,6 +168,7 @@ export default function FlowPage() {
         return newStack;
       });
       setRedoStack([]);
+      editingRef.current = true;
       setEditing(true);
 
       try {
@@ -173,10 +193,11 @@ export default function FlowPage() {
           setUndoStack(stack => stack.slice(0, -1));
         }
       } finally {
+        editingRef.current = false;
         setEditing(false);
       }
     },
-    [flowId, sessionId, getHeaders, editing],
+    [flowId, sessionId, getHeaders],
   );
 
   const saveSnapshot = useCallback((): Snapshot => {
@@ -266,7 +287,7 @@ export default function FlowPage() {
   const handleDelete = useCallback(async (nodeId: string) => {
     const currentFlow = flowRef.current;
     if (!currentFlow || !sessionId) return;
-    if (editing) return;
+    if (editingRef.current) return;
 
     const snapshot = saveSnapshot();
     setUndoStack(stack => {
@@ -275,6 +296,7 @@ export default function FlowPage() {
       return newStack;
     });
     setRedoStack([]);
+    editingRef.current = true;
     setEditing(true);
 
     try {
@@ -307,9 +329,30 @@ export default function FlowPage() {
         setUndoStack(stack => stack.slice(0, -1));
       }
     } finally {
+      editingRef.current = false;
       setEditing(false);
     }
-  }, [flowId, sessionId, getHeaders, saveSnapshot, editing]);
+  }, [flowId, sessionId, getHeaders, saveSnapshot]);
+
+  // Build RF nodes/edges from flow data when it loads or changes
+  useEffect(() => {
+    if (!flow) return;
+
+    const nodes = buildReactFlowNodes(flow.nodes, flow.edges, editMode, handleNodeEdit, handleDelete);
+    const edges = buildReactFlowEdges(flow.edges, flow.nodes);
+
+    if (nodes.length === 0) {
+      console.error('[FlowPage] buildReactFlowNodes returned empty array', flow.nodes);
+      setRenderError(true);
+      return;
+    }
+
+    console.log(`[FlowPage] Rendering ${nodes.length} nodes, ${edges.length} edges`);
+    rfDataRef.current = { nodes, edges };
+    setRfNodes(nodes);
+    setRfEdges(edges);
+    setRenderError(false);
+  }, [flow, editMode, handleNodeEdit, handleDelete]);
 
   const handleToastUndo = useCallback(async () => {
     if (undoStack.length === 0) return;
@@ -378,6 +421,39 @@ export default function FlowPage() {
               This flow does not exist or has expired.
             </p>
           </Card>
+        </main>
+      </div>
+    );
+  }
+
+  if (renderError) {
+    return (
+      <div className={styles.root}>
+        <header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <button
+              className={styles.backButton}
+              onClick={() => router.push('/generate')}
+              aria-label="Back to generator"
+            >
+              &larr;
+            </button>
+            <Link href="/" className={styles.logoLink}><span className={styles.logo}>UserPath</span></Link>
+            <span className={styles.headerDivider} />
+            <span className={styles.productName}>{flow.productName}</span>
+          </div>
+          <div className={styles.headerRight} />
+        </header>
+        <main className={styles.main}>
+          <div className={styles.renderError}>
+            <p>The diagram did not load correctly.</p>
+            <button className={styles.renderErrorBtn} onClick={handleRetryRender}>
+              Reload Diagram
+            </button>
+            <p className={styles.renderErrorHint}>
+              Your flow data is safe — this just reloads the visual.
+            </p>
+          </div>
         </main>
       </div>
     );
@@ -470,6 +546,9 @@ export default function FlowPage() {
                   </button>
                 </div>
               )}
+              <Link href="/generate" className={styles.newFlowBtn}>
+                + New Flow
+              </Link>
               <ExportButton
                 canvasRef={exportRef}
                 journeyRef={journeyRef}
@@ -480,15 +559,17 @@ export default function FlowPage() {
             </div>
           </div>
           <div className={`${styles.diagramSection} ${editMode ? styles.diagramSectionEdit : ''}`} ref={exportRef}>
-            <FlowCanvas
-              nodes={flow.nodes}
-              edges={flow.edges}
-              flowId={flow.flowId}
-              editMode={editMode}
-              onRename={handleNodeEdit}
-              onDelete={handleDelete}
-              reactFlowRef={reactFlowRef}
-            />
+            <FlowErrorBoundary onError={() => setRenderError(true)}>
+              <FlowCanvas
+                key={flow.flowId}
+                nodes={rfNodes}
+                edges={rfEdges}
+                flowId={flow.flowId}
+                editMode={editMode}
+                onRetry={handleRetryRender}
+                reactFlowRef={reactFlowRef}
+              />
+            </FlowErrorBoundary>
           </div>
         </div>
 

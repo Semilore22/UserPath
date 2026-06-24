@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, type RefObject } from 'react';
+import { useState, useRef, useEffect, type RefObject } from 'react';
 import { toPng } from 'html-to-image';
 import type { ReactFlowInstance } from 'reactflow';
 import styles from './ExportButton.module.css';
@@ -25,6 +25,7 @@ export function ExportButton({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(true);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -58,77 +59,127 @@ export function ExportButton({
     name.toLowerCase().replace(/\s+/g, '-');
 
   const handleDownloadFlowDiagram = async () => {
-    if (!canvasRef.current) return;
     setDropdownOpen(false);
     setExporting(true);
     setError(null);
 
-    let prevViewport: { x: number; y: number; zoom: number } | null = null;
-    let prevContainerSize: { w: string; h: string } | null = null;
+    if (!reactFlowRef?.current) return;
+
+    const previousViewport = reactFlowRef.current.getViewport();
 
     try {
-      if (reactFlowRef?.current) {
-        prevViewport = reactFlowRef.current.getViewport();
-
-        const container = canvasRef.current;
-        prevContainerSize = {
-          w: container.style.width,
-          h: container.style.height,
-        };
-        const origW = container.offsetWidth;
-        const origH = container.offsetHeight;
-
-        // Fit all nodes into view
-        reactFlowRef.current.fitView({ padding: 0.15, duration: 0 });
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        const fitted = reactFlowRef.current.getViewport();
-        const MIN_ZOOM = 1.5;
-        const MAX_MULTIPLIER = 4;
-        const mult = Math.max(1, Math.min(MAX_MULTIPLIER, MIN_ZOOM / fitted.zoom));
-
-        if (mult > 1.01) {
-          // Enlarge container so same content fits at higher zoom
-          container.style.width = `${Math.round(origW * mult)}px`;
-          container.style.height = `${Math.round(origH * mult)}px`;
-
-          reactFlowRef.current.setViewport({
-            x: Math.round(fitted.x * mult),
-            y: Math.round(fitted.y * mult),
-            zoom: fitted.zoom * mult,
-          });
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
-
-      const bgColor = typeof document !== 'undefined'
-        ? (getComputedStyle(document.documentElement).getPropertyValue('--color-background').trim() || 'hsl(288, 15%, 8%)')
-        : 'hsl(288, 15%, 8%)';
-
-      const dataUrl = await toPng(canvasRef.current, {
-        backgroundColor: bgColor,
-        quality: 1,
-        pixelRatio: 4,
+      // Step 1: fit entire diagram into view before capture
+      reactFlowRef.current.fitView({
+        padding: 0.1,
+        duration: 0,
+        minZoom: 0.01,
+        maxZoom: 1,
       });
 
-      const link = document.createElement('a');
-      link.download = `${sanitizeName(productName)}-flow-diagram.png`;
-      link.href = dataUrl;
-      link.click();
+      // Wait for fitView to complete
+      await new Promise<void>(resolve => setTimeout(resolve, 200));
+
+      // Step 2: get the viewport element
+      const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
+      if (!viewport) {
+        throw new Error('Viewport not found');
+      }
+
+      // Step 3: get the FULL diagram bounds not just the visible area
+      const allNodes = reactFlowRef.current.getNodes();
+      if (allNodes.length === 0) {
+        throw new Error('No nodes found');
+      }
+
+      // Calculate the bounding box of all nodes in the diagram
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      allNodes.forEach((node) => {
+        const x = node.position.x;
+        const y = node.position.y;
+        const w = node.width ?? 200;
+        const h = node.height ?? 56;
+
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + w);
+        maxY = Math.max(maxY, y + h);
+      });
+
+      const padding = 80;
+      const diagramWidth = (maxX - minX) + padding * 2;
+      const diagramHeight = (maxY - minY) + padding * 2;
+
+      // Step 4: capture at full dimensions
+      const pixelRatio = 2;
+      const dataUrl = await toPng(viewport, {
+        quality: 1,
+        pixelRatio: pixelRatio,
+        width: diagramWidth,
+        height: diagramHeight,
+        canvasWidth: diagramWidth * pixelRatio,
+        canvasHeight: diagramHeight * pixelRatio,
+        cacheBust: true,
+        style: {
+          width: `${diagramWidth}px`,
+          height: `${diagramHeight}px`,
+          transform: `translate(${-minX + padding}px, ${-minY + padding}px)`,
+        },
+        filter: (node) => {
+          if (node.classList) {
+            return (
+              !node.classList.contains('react-flow__controls') &&
+              !node.classList.contains('react-flow__minimap') &&
+              !node.classList.contains('react-flow__panel') &&
+              !node.classList.contains('react-flow__background')
+            );
+          }
+          return true;
+        },
+      });
+
+      // Step 5: trigger download
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isIOS) {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File(
+          [blob],
+          `${sanitizeName(productName)}-flow-diagram.png`,
+          { type: 'image/png' }
+        );
+        if (
+          navigator.canShare &&
+          navigator.canShare({ files: [file] })
+        ) {
+          await navigator.share({
+            files: [file],
+            title: `${productName} Flow Diagram`,
+          });
+        } else {
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          setTimeout(() =>
+            URL.revokeObjectURL(url), 10000
+          );
+        }
+      } else {
+        const link = document.createElement('a');
+        link.download = `${sanitizeName(productName)}-flow-diagram.png`;
+        link.href = dataUrl;
+        link.click();
+      }
     } catch (e) {
+      console.error('[export] PNG error:', e);
       if (mountedRef.current) setError(e instanceof Error ? e.message : 'Failed to export');
     } finally {
-      if (mountedRef.current) {
-        if (reactFlowRef?.current && prevViewport) {
-          reactFlowRef.current.setViewport(prevViewport, { duration: 0 });
-        }
-        if (canvasRef.current && prevContainerSize) {
-          canvasRef.current.style.width = prevContainerSize.w;
-          canvasRef.current.style.height = prevContainerSize.h;
-        }
-        setExporting(false);
-      }
+      // Step 6: restore viewport after capture
+      setTimeout(() => {
+        reactFlowRef.current?.setViewport(previousViewport, { duration: 300 });
+      }, 500);
+      if (mountedRef.current) setExporting(false);
     }
   };
 
@@ -224,6 +275,11 @@ export function ExportButton({
 
       {error && (
         <p className={styles.error} role="alert">{error}</p>
+      )}
+      {isMobile && (
+        <p className={styles.exportHint}>
+          On iPhone, tap Save Image from the share menu to save your diagram.
+        </p>
       )}
     </div>
   );

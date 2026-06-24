@@ -119,3 +119,11 @@
   text-align: center;
   margin: 0;
 }
+
+.exportHint {
+  font-size: var(--font-label-small-font-size);
+  color: var(--color-on-surface-variant);
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 0;
+}

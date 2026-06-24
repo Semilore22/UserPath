@@ -1,16 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import ReactFlow, {
   type ReactFlowInstance,
   type Node as RFNode,
   type Edge as RFEdge,
   type NodeTypes,
+  type EdgeTypes,
   type Viewport,
   Background,
   Controls,
   useNodesState,
   useEdgesState,
+  useStore,
   Handle,
   type NodeProps,
   Position,
@@ -19,7 +21,31 @@ import 'reactflow/dist/style.css';
 import dagre from 'dagre';
 import type { Node as FlowNode, Edge as FlowEdge } from '@/types';
 import { buildStepMap, getNodeDimensions } from '@/lib/step-numbering';
+import { LabelAboveEdge } from './LabelAboveEdge';
 import styles from './FlowCanvas.module.css';
+
+// ── Render validation ─────────────────────────────────────────────────────────
+
+function isFlowReady(
+  nodes: RFNode<NodeData>[],
+  edges: RFEdge[],
+): boolean {
+  if (!nodes || nodes.length === 0) {
+    console.error('[FlowCanvas] No nodes to render');
+    return false;
+  }
+  if (!edges || edges.length === 0) {
+    console.warn('[FlowCanvas] No edges — flow may be disconnected');
+  }
+  const hasTerminal = nodes.some(
+    n => n.type === 'terminal'
+  );
+  if (!hasTerminal) {
+    console.error('[FlowCanvas] No terminal node found');
+    return false;
+  }
+  return true;
+}
 
 // Dagre uses centre-point positioning — add generous padding so labels never clip
 const DAGRE_NODE_W_PADDING = 40;
@@ -27,7 +53,7 @@ const DAGRE_NODE_H_PADDING = 40;
 
 // ── Node data shape ───────────────────────────────────────────────────────────
 
-interface NodeData {
+export interface NodeData {
   label: string;
   isHappyPath: boolean;
   stepNumber: string;
@@ -142,11 +168,20 @@ function useRename(data: NodeData) {
   return { renaming, renameValue, setRenameVal, start, confirm, cancel };
 }
 
+function useScaledFontSize() {
+  const zoom = useStore((s) => s.transform[2]);
+  const baseFontSize = 14;
+  const scaledFontSize = Math.min(baseFontSize / zoom, 22);
+  const finalFontSize = Math.max(scaledFontSize, 12);
+  return finalFontSize;
+}
+
 function ProcessNode({ data }: NodeProps<NodeData>) {
   const { renaming, renameValue, setRenameVal, start, confirm, cancel } = useRename(data);
+  const fontSize = useScaledFontSize();
   const cls = data.isHappyPath ? `${styles.nodeProcess} ${styles.nodeHappyPath}` : styles.nodeProcess;
   return (
-    <div className={cls}>
+    <div className={cls} style={{ fontSize, width: 'auto', minWidth: '180px', maxWidth: '360px', padding: '12px 24px' }}>
       <Handles />
       <span className={styles.stepBadge}>{data.stepNumber}</span>
       <EditableLabel data={data} onStartRename={start} renaming={renaming} renameValue={renameValue} onRenameChange={setRenameVal} onConfirm={confirm} onCancel={cancel} />
@@ -157,21 +192,39 @@ function ProcessNode({ data }: NodeProps<NodeData>) {
 
 function DecisionNode({ data }: NodeProps<NodeData>) {
   const { renaming, renameValue, setRenameVal, start, confirm, cancel } = useRename(data);
+  const fontSize = useScaledFontSize();
   const cls = data.isHappyPath ? `${styles.nodeDecision} ${styles.nodeHappyPath}` : styles.nodeDecision;
   return (
-    <div className={cls}>
+    <div
+      className={cls}
+      style={{
+        width: '250px', height: '250px', transform: 'rotate(45deg)',
+        background: 'hsl(287, 20%, 16%)', border: '1.5px solid hsl(287, 95%, 53%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+    >
       <Handles />
-      <span className={styles.stepBadge}>{data.stepNumber}</span>
-      <EditableLabel data={data} onStartRename={start} renaming={renaming} renameValue={renameValue} onRenameChange={setRenameVal} onConfirm={confirm} onCancel={cancel} />
-      <EditActions data={data} onRename={start} />
+      <div
+        style={{
+          transform: 'rotate(-45deg)', width: '204px', textAlign: 'center',
+          fontWeight: 500, color: 'white', lineHeight: 1.3, fontSize,
+          padding: '4px', whiteSpace: 'normal',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <span className={styles.stepBadge}>{data.stepNumber}</span>
+        <EditableLabel data={data} onStartRename={start} renaming={renaming} renameValue={renameValue} onRenameChange={setRenameVal} onConfirm={confirm} onCancel={cancel} />
+        <EditActions data={data} onRename={start} />
+      </div>
     </div>
   );
 }
 
 function ErrorNode({ data }: NodeProps<NodeData>) {
   const { renaming, renameValue, setRenameVal, start, confirm, cancel } = useRename(data);
+  const fontSize = useScaledFontSize();
   return (
-    <div className={styles.nodeError}>
+    <div className={styles.nodeError} style={{ fontSize, width: 'auto', minWidth: '180px', maxWidth: '360px', padding: '12px 24px' }}>
       <Handles />
       <span className={styles.stepBadge}>{data.stepNumber}</span>
       <EditableLabel data={data} onStartRename={start} renaming={renaming} renameValue={renameValue} onRenameChange={setRenameVal} onConfirm={confirm} onCancel={cancel} />
@@ -182,11 +235,12 @@ function ErrorNode({ data }: NodeProps<NodeData>) {
 
 function TerminalNode({ data }: NodeProps<NodeData>) {
   const { renaming, renameValue, setRenameVal, start, confirm, cancel } = useRename(data);
+  const fontSize = useScaledFontSize();
   const cls = data.isHappyPath
     ? `${styles.nodeTerminal} ${styles.nodeTerminalSuccess}`
     : styles.nodeTerminal;
   return (
-    <div className={cls}>
+    <div className={cls} style={{ fontSize, width: 'auto', minWidth: '180px', maxWidth: '360px', padding: '12px 24px' }}>
       <Handles />
       <span className={styles.stepBadge}>{data.stepNumber}</span>
       <EditableLabel data={data} onStartRename={start} renaming={renaming} renameValue={renameValue} onRenameChange={setRenameVal} onConfirm={confirm} onCancel={cancel} />
@@ -196,12 +250,13 @@ function TerminalNode({ data }: NodeProps<NodeData>) {
 }
 
 const nodeTypes: NodeTypes = { process: ProcessNode, decision: DecisionNode, error: ErrorNode, terminal: TerminalNode };
+const edgeTypes: EdgeTypes = { labelAbove: LabelAboveEdge };
 
 // Step numbering moved to lib/step-numbering.ts — imported above.
 
 // ── React Flow node builder ───────────────────────────────────────────────────
 
-function buildReactFlowNodes(
+export function buildReactFlowNodes(
   fn: FlowNode[],
   fe: FlowEdge[],
   editMode: boolean,
@@ -229,7 +284,7 @@ function buildReactFlowNodes(
 
 // ── React Flow edge builder ───────────────────────────────────────────────────
 
-function buildReactFlowEdges(fe: FlowEdge[], fn: FlowNode[]): RFEdge[] {
+export function buildReactFlowEdges(fe: FlowEdge[], fn: FlowNode[]): RFEdge[] {
   const nodeMap = new Map(fn.map(n => [n.nodeId, n]));
 
   return fe.map((e, index) => {
@@ -243,17 +298,13 @@ function buildReactFlowEdges(fe: FlowEdge[], fn: FlowNode[]): RFEdge[] {
       source: e.fromNode,
       target: e.toNode,
       label: e.label || undefined,
-      type: 'smoothstep',
+      type: 'labelAbove',
       animated: false,
       style: isHappy
         ? { stroke: 'var(--color-primary)', strokeWidth: 2.5, opacity: 0.85 }
         : isError
           ? { stroke: 'var(--color-error)', strokeWidth: 1.5, strokeDasharray: '5 4' }
           : { stroke: 'var(--color-outline)', strokeWidth: 1.5 },
-      labelStyle: { fontSize: 11, fontWeight: 700, fill: 'var(--color-on-surface)' },
-      labelBgStyle: { fill: 'var(--color-surface)', fillOpacity: 0.9 },
-      labelBgPadding: [4, 8] as [number, number],
-      labelBgBorderRadius: 4,
     };
   });
 }
@@ -266,18 +317,20 @@ function layoutNodes(nodes: RFNode[], edges: RFEdge[]): RFNode[] {
   g.setDefaultEdgeLabel(() => ({}));
   g.setGraph({
     rankdir: 'LR',
-    ranksep: 240,
-    nodesep: 60,
-    edgesep: 30,
-    marginx: 150,
-    marginy: 150,
+    nodesep: 80,
+    ranksep: 200,
+    edgesep: 100,
+    marginx: 100,
+    marginy: 100,
   });
 
+  const DECISION_EXTRA_PAD = 64;
   nodes.forEach(node => {
     const dim = getNodeDimensions(node.type ?? 'process');
+    const isDecision = node.type === 'decision';
     g.setNode(node.id, {
-      width: dim.width + DAGRE_NODE_W_PADDING,
-      height: dim.height + DAGRE_NODE_H_PADDING,
+      width: dim.width + DAGRE_NODE_W_PADDING + (isDecision ? DECISION_EXTRA_PAD : 0),
+      height: dim.height + DAGRE_NODE_H_PADDING + (isDecision ? DECISION_EXTRA_PAD : 0),
     });
   });
 
@@ -299,52 +352,147 @@ function layoutNodes(nodes: RFNode[], edges: RFEdge[]): RFNode[] {
 }
 
 const defaultEdgeOptions = {
-  type: 'smoothstep',
-  pathOptions: { borderRadius: 8 },
+  type: 'labelAbove',
 };
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface FlowCanvasProps {
-  nodes: FlowNode[];
-  edges: FlowEdge[];
+  nodes: RFNode<NodeData>[];
+  edges: RFEdge[];
   flowId?: string;
   editMode?: boolean;
-  onRename?: (nodeId: string, newLabel: string) => void;
-  onDelete?: (nodeId: string) => void;
+  onRetry?: () => void;
   reactFlowRef?: React.MutableRefObject<ReactFlowInstance | null>;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function FlowCanvas({
-  nodes: flowNodes,
-  edges: flowEdges,
+  nodes,
+  edges,
   flowId,
   editMode,
-  onRename,
-  onDelete,
+  onRetry,
   reactFlowRef,
 }: FlowCanvasProps) {
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState([]);
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState([]);
   const instanceRef = useRef<ReactFlowInstance | null>(null);
-  const hasLayouted = useRef(false);
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
-  const initialFitDone = useRef(false);
   const isEditMode = editMode ?? false;
-  const hasNodes = flowNodes.length > 0;
+  const hasLayouted = useRef(false);
+  const [isRendering, setIsRendering] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const mounted = useRef(false);
 
-  const baseNodes = useMemo(
-    () => buildReactFlowNodes(flowNodes, flowEdges, isEditMode, onRename, onDelete),
-    [flowNodes, flowEdges, isEditMode, onRename, onDelete],
-  );
-  const baseEdges = useMemo(
-    () => buildReactFlowEdges(flowEdges, flowNodes),
-    [flowEdges, flowNodes],
-  );
+  const handleFullscreen = useCallback(async () => {
+    const diagramContainer = document.getElementById('flow-diagram-container');
+    if (!diagramContainer) return;
+    if (!document.fullscreenElement) {
+      await diagramContainer.requestFullscreen();
+      setTimeout(() => {
+        instanceRef.current?.fitView({
+          padding: 0.15,
+          duration: 0,
+        });
+      }, 100);
+    } else {
+      await document.exitFullscreen();
+      setTimeout(() => {
+        instanceRef.current?.fitView({
+          padding: 0.15,
+          duration: 0,
+        });
+      }, 100);
+    }
+  }, []);
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const onChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  // Escape key exits fullscreen
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // Reset layout and rendering state when a new flow loads
+  useEffect(() => {
+    hasLayouted.current = false;
+    setIsRendering(true);
+    mounted.current = false;
+  }, [flowId]);
+
+  // Layout on first run; sync data (labels, editMode, etc.) on subsequent prop changes
+  useLayoutEffect(() => {
+    if (nodes.length === 0) return;
+
+    if (hasLayouted.current) {
+      setRfNodes(prev => {
+        const posMap = new Map(prev.map(n => [n.id, n]));
+        return nodes.map(n => {
+          const existing = posMap.get(n.id);
+          return existing ? { ...existing, data: n.data } : n;
+        });
+      });
+      setRfEdges(edges);
+      return;
+    }
+
+    try {
+      const laid = layoutNodes(nodes, edges);
+      if (!laid || laid.length === 0) {
+        console.error('[FlowCanvas] Layout produced no nodes');
+        setRfNodes(nodes);
+        setRfEdges(edges);
+        hasLayouted.current = true;
+        setIsRendering(false);
+        instanceRef.current?.fitView({ padding: 0.15, duration: 0 });
+        return;
+      }
+      setRfNodes(laid);
+    } catch {
+      setRfNodes(nodes);
+    }
+    setRfEdges(edges);
+    hasLayouted.current = true;
+    setIsRendering(false);
+
+    instanceRef.current?.fitView({ padding: 0.15, duration: 0 });
+  }, [nodes, edges, flowId, setRfNodes, setRfEdges]);
+
+  // Sync editMode changes onto already-positioned internal nodes
+  useEffect(() => {
+    setRfNodes(prev => prev.map(n => ({
+      ...n,
+      data: { ...n.data, editMode: isEditMode },
+    })));
+  }, [isEditMode, setRfNodes]);
+
+  // Clean up pending animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, []);
 
   const onInit = useCallback((instance: ReactFlowInstance) => {
+    mounted.current = true;
     instanceRef.current = instance;
     if (reactFlowRef) reactFlowRef.current = instance;
     setViewport(instance.getViewport());
@@ -361,45 +509,38 @@ export function FlowCanvas({
     });
   }, []);
 
-  // Layout on every data change so cached-then-fresh updates render
-  useEffect(() => {
-    if (baseNodes.length === 0) return;
-
-    try {
-      const laid = layoutNodes(baseNodes, baseEdges);
-      setRfNodes(laid);
-      setRfEdges(baseEdges);
-    } catch {
-      // dagre layout failed — render nodes at position (0,0) so user sees something
-      setRfNodes(baseNodes);
-      setRfEdges(baseEdges);
-    }
-
-    if (!initialFitDone.current) {
-      initialFitDone.current = true;
-      const t = setTimeout(() => {
-        instanceRef.current?.fitView({ padding: 0.15, minZoom: 0.05, maxZoom: 1.2 });
-      }, 60);
-      return () => clearTimeout(t);
-    }
-  }, [baseNodes, baseEdges, setRfNodes, setRfEdges]);
-
-  useEffect(() => { hasLayouted.current = false; }, [flowId, baseNodes]);
-  useEffect(() => { initialFitDone.current = false; }, [flowId]);
-
-  if (!hasNodes) {
-    return (
-      <div className={styles.root}>
+  // Render ReactFlow unconditionally so onInit sets instanceRef on first mount.
+  // Spinner / empty / error overlays sit on top.
+  return (
+    <div
+      className={`${styles.root} ${isFullscreen ? styles.rootFullscreen : ''}`}
+      id="flow-diagram-container"
+    >
+      {isRendering && (
+        <div className={styles.renderingState}>
+          <div className={styles.spinner} />
+          <p>Rendering your flow...</p>
+        </div>
+      )}
+      {!isRendering && nodes.length === 0 && (
         <div className={styles.empty}>
           <p className={styles.emptyTitle}>Nothing to show yet</p>
           <p className={styles.emptyText}>This flow doesn&rsquo;t have any steps to display.</p>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.root}>
+      )}
+      {!isRendering && nodes.length > 0 && !isFlowReady(nodes, edges) && (
+        <div className={styles.errorState}>
+          <p>Flow could not be rendered.</p>
+          {onRetry && (
+            <button
+              className={styles.retryBtn}
+              onClick={onRetry}
+            >
+              Try Again
+            </button>
+          )}
+        </div>
+      )}
       <ReactFlow
         nodes={rfNodes}
         edges={rfEdges}
@@ -408,8 +549,9 @@ export function FlowCanvas({
         onInit={onInit}
         onMove={onMove}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', touchAction: 'none' }}
         attributionPosition="bottom-left"
         fitView={false}
         minZoom={0.05}
@@ -417,10 +559,24 @@ export function FlowCanvas({
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={isEditMode}
+        panOnDrag={true}
+        panOnScroll={false}
+        zoomOnScroll={true}
+        zoomOnPinch={true}
+        preventScrolling={true}
+        panActivationKeyCode={null}
       >
         <Background />
         <Controls />
       </ReactFlow>
+      <button
+        className={`${styles.fullscreenBtn} ${isFullscreen ? styles.fullscreenBtnActive : ''}`}
+        onClick={handleFullscreen}
+        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+        title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+      >
+        {isFullscreen ? '✕ Exit Fullscreen' : '⛶ Fullscreen'}
+      </button>
     </div>
   );
 }

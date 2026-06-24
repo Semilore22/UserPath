@@ -1,4 +1,5 @@
 .root {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -8,11 +9,14 @@
 }
 
 .empty {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background-color: var(--color-surface);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
   gap: 8px;
 }
 
@@ -34,18 +38,17 @@
 
 .nodeProcess {
   position: relative;
-  padding: 10px 14px;
-  width: 240px;
+  padding: 14px 20px;
+  width: 280px;
   min-height: 56px;
   text-align: left;
-  white-space: normal;
-  word-wrap: break-word;
   background-color: var(--color-surface-container-high);
   border: 1.5px solid var(--color-primary);
   border-radius: 8px;
   font-family: var(--font-body-medium-font-family);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
+  line-height: 1.6;
   color: var(--color-on-surface);
   display: flex;
   align-items: center;
@@ -58,8 +61,8 @@
 
 .nodeDecision {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 200px;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,8 +71,9 @@
   border: 1.5px solid var(--color-primary);
   color: var(--color-on-surface);
   font-family: var(--font-body-medium-font-family);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
+  text-align: center;
   /* Rotated square = diamond */
   transform: rotate(45deg);
   border-radius: 6px;
@@ -85,12 +89,10 @@
 
 .nodeError {
   position: relative;
-  padding: 10px 14px;
-  width: 240px;
+  padding: 14px 20px;
+  width: 280px;
   min-height: 56px;
   text-align: left;
-  white-space: normal;
-  word-wrap: break-word;
   background-color: var(--color-error-container);
   border: 1.5px solid var(--color-error);
   border-radius: 8px;
@@ -100,6 +102,8 @@
   color: var(--color-on-surface);
   font-family: var(--font-body-medium-font-family);
   font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -110,8 +114,8 @@
 
 .nodeTerminal {
   position: relative;
-  padding: 10px 24px;
-  min-width: 140px;
+  padding: 12px 28px;
+  width: 180px;
   min-height: 52px;
   text-align: center;
   background-color: var(--color-primary);
@@ -119,8 +123,9 @@
   border-radius: 999px;
   color: var(--color-on-primary);
   font-family: var(--font-body-medium-font-family);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1.5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -153,13 +158,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 4px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-on-primary);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   flex-shrink: 0;
   line-height: 1;
@@ -251,6 +256,111 @@
 }
 
 /* ── Mobile ───────────────────────────────────────────────────────────────── */
+
+/* ── Error state ──────────────────────────────────────────────────────────── */
+
+.errorState {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--color-on-surface);
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+}
+
+.retryBtn {
+  padding: 8px 20px;
+  font-family: var(--font-label-large-font-family);
+  font-size: var(--font-label-large-font-size);
+  font-weight: 600;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: 1000px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.retryBtn:hover {
+  opacity: 0.85;
+}
+
+/* ── Rendering state ──────────────────────────────────────────────────────── */
+
+.renderingState {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background-color: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--color-on-surface);
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid hsl(287, 20%, 20%);
+  border-top-color: hsl(287, 95%, 53%);
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Fullscreen ───────────────────────────────────────────────────────────── */
+
+.rootFullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: hsl(287, 20%, 6%);
+  z-index: 9998;
+  border: none;
+  border-radius: 0;
+}
+
+.fullscreenBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: var(--font-label-large-font-family);
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid hsl(287, 20%, 30%);
+  border-radius: 8px;
+  color: hsl(287, 12%, 65%);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.fullscreenBtn:hover {
+  border-color: hsl(287, 95%, 53%);
+  color: white;
+}
+
+.fullscreenBtnActive {
+  border-color: hsl(287, 95%, 53%);
+  color: white;
+}
 
 @media (max-width: 768px) {
   .nodeActionBtn {

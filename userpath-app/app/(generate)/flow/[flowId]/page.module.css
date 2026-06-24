@@ -296,7 +296,7 @@
   color: var(--color-on-surface-variant);
   background: var(--color-surface);
   border: 1.5px solid var(--color-outline);
-  border-radius: 8px;
+  border-radius: 1000px;
   cursor: pointer;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -310,6 +310,28 @@
   background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+.newFlowBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--font-label-large-font-family);
+  font-size: var(--font-label-large-font-size);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-outline);
+  border-radius: 1000px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.newFlowBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-on-surface);
 }
 
 .undoRedoGroup {
@@ -443,6 +465,48 @@
 .toastUndo:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ── Render error ─────────────────────────────────────────────────────────── */
+
+.renderError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  gap: 16px;
+}
+
+.renderError p {
+  font-family: var(--font-body-medium-font-family);
+  font-size: var(--font-body-medium-font-size);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.renderErrorBtn {
+  padding: 10px 24px;
+  font-family: var(--font-label-large-font-family);
+  font-size: var(--font-label-large-font-size);
+  font-weight: 600;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: 1000px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.renderErrorBtn:hover {
+  opacity: 0.85;
+}
+
+.renderErrorHint {
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  max-width: 360px;
 }
 
 @media (max-width: 768px) {
