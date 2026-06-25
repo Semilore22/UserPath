@@ -28,11 +28,14 @@ function getOrCreateSessionId(): string {
 }
 
 export function useSession() {
-  const [sessionId, setSessionId] = useState('');
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const id = getOrCreateSessionId();
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSessionId(getOrCreateSessionId());
+    setSessionId(id);
+    setReady(true);
   }, []);
 
   const getHeaders = useCallback((): HeadersInit => {
@@ -45,5 +48,5 @@ export function useSession() {
     return headers;
   }, [sessionId]);
 
-  return { sessionId, getHeaders };
+  return { sessionId: sessionId ?? '', ready, getHeaders };
 }

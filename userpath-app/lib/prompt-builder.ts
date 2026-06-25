@@ -163,14 +163,18 @@ If any check fails fix it before returning.
 - No markdown, no explanation, no commentary`;
 }
 
+function sanitizePromptValue(value: string): string {
+  return value.replace(/\n/g, ' ').replace(/["\\]/g, '').trim();
+}
+
 export function buildUserMessage(input: GenerateFlowInput): string {
   return `You are designing a user flow for the following product:
 
-Product name: ${input.productName}
-Flow type: ${input.flowType}
-Target users: ${input.targetUsers.join(', ')}
-Key action: ${input.keyAction}
+Product name: ${sanitizePromptValue(input.productName)}
+Flow type: ${sanitizePromptValue(input.flowType)}
+Target users: ${input.targetUsers.map(sanitizePromptValue).join(', ')}
+Key action: ${sanitizePromptValue(input.keyAction)}
 
 Product description:
-${input.description}`;
+${sanitizePromptValue(input.description)}`;
 }

@@ -75,9 +75,31 @@ export function buildStepMap(fn: FlowNode[], fe: FlowEdge[]): Map<string, string
       const parentStep = stepMap.get(parentEdge.fromNode)!;
       const count = branchCounters.get(parentEdge.fromNode) ?? 0;
       branchCounters.set(parentEdge.fromNode, count + 1);
-      stepMap.set(n.nodeId, `${parentStep}${String.fromCharCode(97 + count)}`);
+      if (count < 26) {
+        stepMap.set(n.nodeId, `${parentStep}${String.fromCharCode(97 + count)}`);
+      } else {
+        stepMap.set(n.nodeId, `${parentStep}*`);
+      }
     } else {
       stepMap.set(n.nodeId, '–');
+    }
+  });
+
+  // Third pass: assign step numbers to any non-happy-path nodes missed by the
+  // branch logic (e.g. nodes in disconnected sub-graphs that have no happy-path ancestor)
+  fn.forEach(n => {
+    if (!stepMap.has(n.nodeId)) {
+      const inEdges = fe.filter(e => e.toNode === n.nodeId);
+      const parentStep = inEdges
+        .map(e => stepMap.get(e.fromNode))
+        .find(s => s !== undefined);
+      if (parentStep) {
+        const count = branchCounters.get(parentStep) ?? 0;
+        branchCounters.set(parentStep, count + 1);
+        stepMap.set(n.nodeId, count < 26 ? `${parentStep}${String.fromCharCode(97 + count)}` : `${parentStep}*`);
+      } else {
+        stepMap.set(n.nodeId, '–');
+      }
     }
   });
 

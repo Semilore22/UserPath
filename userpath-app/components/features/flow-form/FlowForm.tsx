@@ -44,7 +44,7 @@ export function FlowForm({
   fieldErrors = {},
 }: FlowFormProps) {
   return (
-    <div className={styles.grid}>
+    <form className={styles.grid} onSubmit={(e) => e.preventDefault()}>
       <Input
         label="Product Name"
         value={productName}
@@ -86,6 +86,6 @@ export function FlowForm({
         required
         error={fieldErrors.keyAction ?? undefined}
       />
-    </div>
+    </form>
   );
 }

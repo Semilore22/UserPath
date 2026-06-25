@@ -152,6 +152,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const rawOutput = await generateWithRetry(generateInput);
     const parsedFlow = parseFlowOutput(rawOutput);
+    const cacheKey = buildCacheKey(generateInput);
 
     const flow = await db.flow.create({
       data: {
@@ -167,24 +168,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       },
     });
 
-    await db.flowGenerationCache.upsert({
-      where: { cacheKey: buildCacheKey(generateInput) },
-      update: { flowId: flow.id },
-      create: { cacheKey: buildCacheKey(generateInput), flowId: flow.id },
-    });
+    try {
+      await db.flowGenerationCache.upsert({
+        where: { cacheKey },
+        update: { flowId: flow.id },
+        create: { cacheKey, flowId: flow.id },
+      });
+    } catch {
+      // Non-critical: cache miss just means a future identical input regenerates
+    }
 
     return NextResponse.json(
       {
         flowId: flow.id,
         productName: flow.productName,
-        nodes: flow.nodes,
-        edges: flow.edges,
-        userJourneySteps: flow.userJourneySteps,
+        nodes: JSON.parse(flow.nodes),
+        edges: JSON.parse(flow.edges),
+        userJourneySteps: JSON.parse(flow.userJourneySteps),
         createdAt: flow.createdAt,
       },
       { status: 201 },
     );
-  } catch {
+  } catch (error) {
+    console.error('[generate]', error instanceof Error ? error.message : String(error));
     return NextResponse.json(
       { error: 'ERR_INTERNAL_ERROR' },
       { status: 500 },

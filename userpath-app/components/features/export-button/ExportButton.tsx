@@ -76,8 +76,8 @@ export function ExportButton({
         maxZoom: 1,
       });
 
-      // Wait for fitView to complete
       await new Promise<void>(resolve => setTimeout(resolve, 200));
+      if (!mountedRef.current) return;
 
       // Step 2: get the viewport element
       const viewport = document.querySelector('.react-flow__viewport') as HTMLElement;
@@ -141,6 +141,8 @@ export function ExportButton({
       });
 
       // Step 5: trigger download
+      if (!mountedRef.current) return;
+
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isIOS) {
         const res = await fetch(dataUrl);
@@ -194,10 +196,11 @@ export function ExportButton({
         ? (getComputedStyle(document.documentElement).getPropertyValue('--color-background').trim() || 'hsl(288, 15%, 8%)')
         : 'hsl(288, 15%, 8%)';
 
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
       const dataUrl = await toPng(journeyRef.current, {
         backgroundColor: bgColor,
         quality: 1,
-        pixelRatio: 4,
+        pixelRatio,
       });
 
       const link = document.createElement('a');

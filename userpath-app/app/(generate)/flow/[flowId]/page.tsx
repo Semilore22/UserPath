@@ -38,7 +38,7 @@ export default function FlowPage() {
   }
   const flowId = rawFlowId;
 
-  const { sessionId, getHeaders } = useSession();
+  const { sessionId, ready: sessionReady, getHeaders } = useSession();
   const [flow, setFlow] = useState<FlowData | null>(null);
   const flowRef = useRef<FlowData | null>(null);
 
@@ -59,6 +59,7 @@ export default function FlowPage() {
   const [toast, setToast] = useState<{ message: string; id: number } | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastIdCounter = useRef(0);
   const tooltipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editingRef = useRef(false);
 
@@ -96,7 +97,7 @@ export default function FlowPage() {
     const abortController = new AbortController();
 
     const fetchFresh = async () => {
-      if (!sessionId) return;
+      if (!sessionReady || !sessionId) return;
       try {
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
@@ -120,13 +121,14 @@ export default function FlowPage() {
         const freshData: FlowData = {
           flowId: responseData.flowId,
           productName: responseData.productName,
-          nodes: JSON.parse(responseData.nodes as string),
-          edges: JSON.parse(responseData.edges as string),
-          userJourneySteps: JSON.parse(responseData.userJourneySteps as string),
+          nodes: responseData.nodes,
+          edges: responseData.edges,
+          userJourneySteps: responseData.userJourneySteps,
           createdAt: responseData.createdAt,
         };
 
         setFlow(freshData);
+        setNetworkError(false);
         setLoading(false);
         try {
           localStorage.setItem(`userpath-flow-${flowId}`, JSON.stringify(freshData));
@@ -134,7 +136,7 @@ export default function FlowPage() {
         } catch {}
       } catch {
         if (!abortController.signal.aborted) {
-          setNetworkError(true);
+          // Don't override cached data — only set networkError if we have nothing
           setLoading(false);
         }
       }
@@ -143,7 +145,7 @@ export default function FlowPage() {
     fetchFresh();
 
     return () => { abortController.abort(); };
-  }, [flowId, sessionId]);
+  }, [flowId, sessionId, sessionReady]);
 
   useEffect(() => {
     return () => {
@@ -251,12 +253,14 @@ export default function FlowPage() {
         const data = await res.json();
         setFlow({
           ...currentFlow,
-          nodes: JSON.parse(data.nodes),
-          edges: JSON.parse(data.edges),
+          nodes: data.nodes,
+          edges: data.edges,
         });
         return true;
       }
-    } catch {}
+    } catch (e) {
+      console.error('[restoreSnapshot]', e);
+    }
     return false;
   }, [flowId, sessionId, getHeaders]);
 
@@ -316,10 +320,11 @@ export default function FlowPage() {
         const data = await res.json();
         setFlow({
           ...currentFlow,
-          nodes: JSON.parse(data.nodes),
-          edges: JSON.parse(data.edges),
+          nodes: data.nodes,
+          edges: data.edges,
         });
-        const toastId = Date.now();
+        toastIdCounter.current += 1;
+        const toastId = toastIdCounter.current;
         setToast({ message: 'Step deleted', id: toastId });
         if (toastTimer.current) clearTimeout(toastTimer.current);
         toastTimer.current = setTimeout(() => {
@@ -396,7 +401,7 @@ export default function FlowPage() {
     );
   }
 
-  if (networkError) {
+  if (networkError && !flow) {
     return (
       <div className={styles.root}>
         <main className={styles.main}>
@@ -411,7 +416,7 @@ export default function FlowPage() {
     );
   }
 
-  if (notFound || !flow) {
+  if (!flow) {
     return (
       <div className={styles.root}>
         <main className={styles.main}>

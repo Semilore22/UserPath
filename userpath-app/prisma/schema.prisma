@@ -50,6 +50,7 @@ model Flow {
 
   @@index([sessionId])
   @@index([sessionId, createdAt])
+  @@index([createdAt])
 }
 
 model EditLog {

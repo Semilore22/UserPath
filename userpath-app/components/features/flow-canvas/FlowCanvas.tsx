@@ -469,7 +469,7 @@ export function FlowCanvas({
     hasLayouted.current = true;
     setIsRendering(false);
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       instanceRef.current?.fitView({
         padding: 0.15,
         minZoom: 0.1,
@@ -477,6 +477,7 @@ export function FlowCanvas({
         includeHiddenNodes: false,
       });
     }, 300);
+    return () => clearTimeout(timer);
   }, [nodes, edges, flowId, setRfNodes, setRfEdges]);
 
   // Sync editMode changes onto already-positioned internal nodes
@@ -487,7 +488,6 @@ export function FlowCanvas({
     })));
   }, [isEditMode, setRfNodes]);
 
-  // Clean up pending animation frame on unmount
   useEffect(() => {
     return () => {
       if (rafRef.current != null) {

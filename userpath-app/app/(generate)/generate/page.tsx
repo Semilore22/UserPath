@@ -21,7 +21,7 @@ const PROGRESS_LABELS = [
 
 export default function GeneratePage() {
   const router = useRouter();
-  const { sessionId, getHeaders } = useSession();
+  const { sessionId, ready: sessionReady, getHeaders } = useSession();
   const [description, setDescription] = useState('');
   const [descriptionError, setDescriptionError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,7 +70,12 @@ export default function GeneratePage() {
     setProgressStep(0);
   };
 
+  const generatingRef = useRef(false);
+
   const handleGenerate = async () => {
+    if (generatingRef.current) return;
+    generatingRef.current = true;
+
     setDescriptionError(null);
     setFormError(null);
     setFieldErrors({});
@@ -165,9 +170,9 @@ export default function GeneratePage() {
           JSON.stringify({
             flowId: result.flowId,
             productName: result.productName,
-            nodes: JSON.parse(result.nodes),
-            edges: JSON.parse(result.edges),
-            userJourneySteps: JSON.parse(result.userJourneySteps),
+            nodes: result.nodes,
+            edges: result.edges,
+            userJourneySteps: result.userJourneySteps,
             createdAt: result.createdAt,
           }),
         );
@@ -194,6 +199,7 @@ export default function GeneratePage() {
       setProgressStep(0);
     } finally {
       clearTimeout(timeoutId);
+      generatingRef.current = false;
     }
   };
 

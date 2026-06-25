@@ -9,6 +9,8 @@ export const WINDOW_HOURS = 24;
 
 export const MAX_BODY_SIZE = 1024 * 10;
 
+export const MAX_EDIT_LOG_ENTRIES = 500;
+
 export const DEEPSEEK_TIMEOUT_MS = 45000;
 export const DEEPSEEK_RETRIES = 2;
 

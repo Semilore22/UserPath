@@ -52,7 +52,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null });
-              window.location.reload();
             }}
             style={{
               padding: '0.75rem 1.5rem',
@@ -66,7 +65,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               fontWeight: 600,
             }}
           >
-            Reload
+            Try Again
           </button>
         </div>
       );

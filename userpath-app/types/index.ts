@@ -128,11 +128,11 @@ export interface Flow {
 export interface GenerateFlowResponse {
   flowId: string;
   productName: string;
-  nodes: string;
-  edges: string;
-  userJourneySteps: string;
+  nodes: Node[];
+  edges: Edge[];
+  userJourneySteps: JourneyStep[];
   createdAt: string;
-  lastEditedAt: string;
+  lastEditedAt?: string;
 }
 
 export interface RateLimitResult {

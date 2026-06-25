@@ -54,7 +54,7 @@ async function deepSeekOffTopicCheck(description: string): Promise<boolean> {
     }),
   });
 
-  if (!response.ok) return true;
+  if (!response.ok) return false;
 
   const data = await response.json();
   const content = data?.choices?.[0]?.message?.content?.trim().toLowerCase();

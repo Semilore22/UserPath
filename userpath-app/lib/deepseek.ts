@@ -40,7 +40,7 @@ export async function generateUserFlow(input: GenerateFlowInput, timeoutMs = DEE
   const key = process.env.DEEPSEEK_API_KEY;
 
   if (!baseUrl || !key) {
-    throw new Error('DEEPSEEK_API_URL and DEEPSEEK_API_KEY must be defined in env.');
+    throw new DeepSeekApiError(500, 'DEEPSEEK_API_URL and DEEPSEEK_API_KEY must be defined in env.');
   }
 
   const systemPrompt = buildSystemPrompt();

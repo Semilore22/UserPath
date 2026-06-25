@@ -34,7 +34,38 @@ export class FlowErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError) {
-      return null;
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '240px',
+          padding: '2rem',
+          textAlign: 'center',
+          color: 'var(--color-on-background, #e0dce4)',
+        }}>
+          <p style={{ marginBottom: '0.75rem' }}>
+            The flow diagram encountered an error.
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false });
+              this.props.onError();
+            }}
+            style={{
+              padding: '0.5rem 1.25rem',
+              borderRadius: '1000px',
+              border: '1px solid var(--color-outline, #49454f)',
+              background: 'transparent',
+              color: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            Reload
+          </button>
+        </div>
+      );
     }
     return this.props.children;
   }

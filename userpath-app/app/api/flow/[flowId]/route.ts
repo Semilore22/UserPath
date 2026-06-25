@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { EDIT_TYPES, type EditType } from '@/types';
-import { SESSION_HEADER } from '@/lib/constants';
+import { SESSION_HEADER, MAX_BODY_SIZE, MAX_EDIT_LOG_ENTRIES } from '@/lib/constants';
 
 
 function isValidNode(n: unknown): n is Record<string, unknown> {
@@ -37,9 +37,9 @@ export async function GET(
     return NextResponse.json({
       flowId: flow.id,
       productName: flow.productName,
-      nodes: flow.nodes,
-      edges: flow.edges,
-      userJourneySteps: flow.userJourneySteps,
+      nodes: JSON.parse(flow.nodes),
+      edges: JSON.parse(flow.edges),
+      userJourneySteps: JSON.parse(flow.userJourneySteps),
       createdAt: flow.createdAt,
       lastEditedAt: flow.lastEditedAt,
     });
@@ -77,7 +77,14 @@ export async function PATCH(
 
     let body: Record<string, unknown>;
     try {
-      body = await req.json();
+      const raw = await req.text();
+      if (raw.length > MAX_BODY_SIZE) {
+        return NextResponse.json(
+          { error: 'ERR_PAYLOAD_TOO_LARGE' },
+          { status: 413 },
+        );
+      }
+      body = JSON.parse(raw);
     } catch {
       return NextResponse.json(
         { error: 'ERR_MALFORMED_JSON' },
@@ -153,7 +160,7 @@ export async function PATCH(
             edgeId: `${incomingEdges[0].edgeId}-reconnect`,
             fromNode: incomingEdges[0].fromNode,
             toNode: outgoingEdges[0].toNode,
-            label: incomingEdges[0].label,
+            label: `continued`,
           });
         }
 
@@ -211,20 +218,25 @@ export async function PATCH(
         logNew = newValue;
       }
 
+      const editLogCount = await tx.editLog.count({ where: { flowId } });
+      if (editLogCount < MAX_EDIT_LOG_ENTRIES) {
+        await tx.editLog.create({
+          data: {
+            flowId,
+            sessionId,
+            editType: editType as EditType,
+            previousValue: logPrevious,
+            newValue: logNew,
+          },
+        });
+      }
+
       await tx.flow.update({
         where: { id: flowId },
         data: {
           nodes: JSON.stringify(nodes),
           edges: JSON.stringify(edges),
-        },
-      });
-      await tx.editLog.create({
-        data: {
-          flowId,
-          sessionId,
-          editType: editType as EditType,
-          previousValue: logPrevious,
-          newValue: logNew,
+          lastEditedAt: new Date(),
         },
       });
 
@@ -236,9 +248,9 @@ export async function PATCH(
       return {
         flowId: updatedFlow.id,
         productName: updatedFlow.productName,
-        nodes: updatedFlow.nodes,
-        edges: updatedFlow.edges,
-        userJourneySteps: updatedFlow.userJourneySteps,
+        nodes: JSON.parse(updatedFlow.nodes),
+        edges: JSON.parse(updatedFlow.edges),
+        userJourneySteps: JSON.parse(updatedFlow.userJourneySteps),
         createdAt: updatedFlow.createdAt,
         lastEditedAt: updatedFlow.lastEditedAt,
       };

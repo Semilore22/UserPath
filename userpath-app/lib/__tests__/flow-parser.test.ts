@@ -94,7 +94,7 @@ describe('parseFlowOutput', () => {
     const raw = makeValidRaw();
     raw.nodes[1] = {
       node_id: 'n2', type: 'process', label: 'Test', is_happy_path: false,
-      edge_case_type: 'unknown_value' as null,
+      edge_case_type: 'unknown_value' as unknown as null,
     };
     const result = parseFlowOutput(raw);
     expect(result.nodes[1].edgeCaseType).toBeNull();

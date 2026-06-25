@@ -13,17 +13,22 @@ export function looseJsonParse(raw: string): any {
   try {
     return JSON.parse(cleaned);
   } catch {
-    // remove trailing commas before closing brackets/braces
     cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
-    // escape backslash-prefixed chars before key matching
     cleaned = cleaned.replace(/\\(['"])/g, '\\$1');
-    // wrap unquoted string keys (compatible regex, no lookbehind)
-    cleaned = cleaned.replace(
+    // Strip already-quoted strings before key matching to avoid corrupting values
+    const placeholderMap = new Map<string, string>();
+    let placeholderIndex = 0;
+    const stripped = cleaned.replace(/"([^"\\]|\\.)*"/g, (match) => {
+      const key = `__QS${placeholderIndex++}__`;
+      placeholderMap.set(key, match);
+      return key;
+    });
+    const reKeyed = stripped.replace(
       /(?:^|(?<=[\s,{]))([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:(?!:)/g,
       '"$1":',
     );
-    // replace only JSON-value-level single quotes with double quotes
-    // match 'value' patterns at value positions (after : or , or [)
+    // Restore quoted strings
+    cleaned = reKeyed.replace(/__QS\d+__/g, (match) => placeholderMap.get(match) ?? match);
     cleaned = cleaned.replace(
       /:\s*'([^']*?)'\s*([,}\]])/g,
       ': "$1"$2',

@@ -2,38 +2,6 @@ import { getDb } from './db';
 import { MAX_GENERATIONS, MAX_GENERATIONS_PER_SESSION, WINDOW_HOURS } from './constants';
 import type { RateLimitResult } from '@/types';
 
-export async function checkRateLimit(
-  ipAddress: string,
-): Promise<RateLimitResult> {
-  const now = new Date();
-  const db = await getDb();
-
-  const record = await db.rateLimit.findUnique({
-    where: { ipAddress },
-  });
-
-  if (!record) {
-    return { allowed: true, remaining: MAX_GENERATIONS };
-  }
-
-  const expiresAt = new Date(record.windowExpires);
-
-  if (now > expiresAt) {
-    return { allowed: true, remaining: MAX_GENERATIONS };
-  }
-
-  const remaining = Math.max(0, MAX_GENERATIONS - record.generationCount);
-
-  if (remaining <= 0) {
-    const retryAfter = Math.ceil(
-      (expiresAt.getTime() - now.getTime()) / 1000,
-    );
-    return { allowed: false, remaining: 0, retryAfter };
-  }
-
-  return { allowed: true, remaining };
-}
-
 export async function checkAndIncrementRateLimit(
   ipAddress: string,
   sessionId: string,

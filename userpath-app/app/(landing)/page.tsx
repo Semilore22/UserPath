@@ -1,9 +1,16 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { HowItWorksSection } from '@/components/features/how-it-works';
 import { ProblemSection } from '@/components/features/problem-section/ProblemSection';
 import { WhoItsForSection } from '@/components/features/who-its-for/WhoItsForSection';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Navbar } from '@/components/features/navbar/Navbar';
 import styles from './page.module.css';
+
+export const metadata: Metadata = {
+  title: 'UserPath — AI-Powered User Flow Generator',
+  description: 'Describe your product in plain language and get a production-ready user flow diagram, step-by-step journey, and downloadable PNG in under sixty seconds.',
+};
 
 export default function LandingPage() {
   return (
@@ -31,11 +38,11 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <ProblemSection />
+      <ErrorBoundary><ProblemSection /></ErrorBoundary>
 
-      <HowItWorksSection />
+      <ErrorBoundary><HowItWorksSection /></ErrorBoundary>
 
-      <WhoItsForSection />
+      <ErrorBoundary><WhoItsForSection /></ErrorBoundary>
 
       <footer className={styles.footer}>
         <div className={styles.footerTop}>

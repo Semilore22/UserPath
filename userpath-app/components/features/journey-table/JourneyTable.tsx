@@ -29,7 +29,7 @@ export function JourneyTable({ steps }: JourneyTableProps) {
               <th scope="col" style={{ width: '60px', textAlign: 'center' }}>Step</th>
               <th scope="col" style={{ width: '20%' }}>User Action</th>
               <th scope="col" style={{ width: '22%' }}>System Response</th>
-              <th scope="col" className={styles.edgeCaseHeader}>
+              <th scope="col" className={styles.edgeCaseHeader} aria-label="Edge Case">
                 ⚠ Edge Case
               </th>
               <th scope="col" className={styles.edgeCaseResponseHeader}>
