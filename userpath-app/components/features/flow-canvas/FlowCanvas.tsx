@@ -436,7 +436,7 @@ export function FlowCanvas({
   }, [flowId]);
 
   // Layout on first run; sync data (labels, editMode, etc.) on subsequent prop changes
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (nodes.length === 0) return;
 
     if (hasLayouted.current) {
@@ -459,7 +459,6 @@ export function FlowCanvas({
         setRfEdges(edges);
         hasLayouted.current = true;
         setIsRendering(false);
-        instanceRef.current?.fitView({ padding: 0.15, duration: 0 });
         return;
       }
       setRfNodes(laid);
@@ -470,7 +469,14 @@ export function FlowCanvas({
     hasLayouted.current = true;
     setIsRendering(false);
 
-    instanceRef.current?.fitView({ padding: 0.15, duration: 0 });
+    setTimeout(() => {
+      instanceRef.current?.fitView({
+        padding: 0.15,
+        minZoom: 0.1,
+        maxZoom: 1,
+        includeHiddenNodes: false,
+      });
+    }, 300);
   }, [nodes, edges, flowId, setRfNodes, setRfEdges]);
 
   // Sync editMode changes onto already-positioned internal nodes
@@ -496,6 +502,14 @@ export function FlowCanvas({
     instanceRef.current = instance;
     if (reactFlowRef) reactFlowRef.current = instance;
     setViewport(instance.getViewport());
+    setTimeout(() => {
+      instance.fitView({
+        padding: 0.15,
+        minZoom: 0.1,
+        maxZoom: 1,
+        includeHiddenNodes: false,
+      });
+    }, 300);
   }, [reactFlowRef]);
 
   const rafRef = useRef<number | null>(null);

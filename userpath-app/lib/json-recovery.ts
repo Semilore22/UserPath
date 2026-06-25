@@ -53,7 +53,12 @@ export async function parseDeepSeekResponse(
     );
   }
 
-  const parsed = looseJsonParse(content) as Record<string, unknown>;
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = looseJsonParse(content) as Record<string, unknown>;
+  } catch {
+    throw new DeepSeekApiError(500, 'DeepSeek response contains malformed JSON');
+  }
 
   if (
     !parsed.nodes ||

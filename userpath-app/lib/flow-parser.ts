@@ -108,7 +108,7 @@ export function parseFlowOutput(raw: RawFlowOutput): Flow {
 
   const userJourneySteps = raw.user_journey_steps.map(
     (s: RawFlowOutput['user_journey_steps'][number]) => {
-      if (typeof s.step !== 'number' || !s.user_action || !s.system_response) {
+      if (typeof s.step !== 'number' || s.user_action === undefined || s.system_response === undefined) {
         throw new FlowParseError('Journey step missing required fields');
       }
 
